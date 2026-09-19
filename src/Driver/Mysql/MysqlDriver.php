@@ -45,8 +45,8 @@ final class MysqlDriver implements Driver
 {
     public function __construct(private readonly PDO $pdo)
     {
-        self::assertAttribute($pdo, PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION, 'PDO::ATTR_ERRMODE = PDO::ERRMODE_EXCEPTION');
-        self::assertAttribute($pdo, PDO::ATTR_EMULATE_PREPARES, 0, 'PDO::ATTR_EMULATE_PREPARES = false');
+        self::assertAttribute($pdo, PDO::ATTR_ERRMODE, [PDO::ERRMODE_EXCEPTION], 'PDO::ATTR_ERRMODE = PDO::ERRMODE_EXCEPTION');
+        self::assertAttribute($pdo, PDO::ATTR_EMULATE_PREPARES, [0, false], 'PDO::ATTR_EMULATE_PREPARES = false');
 
         $pdo->exec("SET time_zone = '+00:00'");
         $pdo->exec('SET SESSION TRANSACTION ISOLATION LEVEL READ COMMITTED');
@@ -68,18 +68,22 @@ final class MysqlDriver implements Driver
     }
 
     /**
-     * `pdo_mysql` reports both attributes as ints, so `ATTR_EMULATE_PREPARES = false` reads back as `0`. An
-     * attribute the PDO driver cannot report at all passes: the guard is here to catch a misconfigured connection,
-     * not to reject one whose driver simply answers no questions.
+     * The read-back spelling of a value is the PDO driver's business, not the caller's: `pdo_mysql` reports
+     * `ATTR_EMULATE_PREPARES = false` as `int(0)` up to PHP 8.3 and as `bool(false)` from 8.4 on, so each
+     * requirement lists every spelling that satisfies it. An attribute the PDO driver cannot report at all passes:
+     * the guard is here to catch a misconfigured connection, not to reject one whose driver simply answers no
+     * questions.
+     *
+     * @param list<int|bool> $accepted
      */
-    private static function assertAttribute(PDO $pdo, int $attribute, int $expected, string $requirement): void
+    private static function assertAttribute(PDO $pdo, int $attribute, array $accepted, string $requirement): void
     {
         try {
             $actual = $pdo->getAttribute($attribute);
         } catch (PDOException) {
             return;
         }
-        if ($actual !== $expected) {
+        if (!\in_array($actual, $accepted, true)) {
             throw new InvalidArgumentException('MysqlDriver requires ' . $requirement);
         }
     }
