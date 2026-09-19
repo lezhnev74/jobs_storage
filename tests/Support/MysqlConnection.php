@@ -19,9 +19,21 @@ final class MysqlConnection
             [
                 PDO::ATTR_ERRMODE => PDO::ERRMODE_EXCEPTION,
                 PDO::ATTR_EMULATE_PREPARES => false,
-                PDO::MYSQL_ATTR_FOUND_ROWS => true,
+                self::foundRowsAttribute() => true,
             ],
         );
+    }
+
+    /**
+     * PHP 8.5 deprecates the `PDO::MYSQL_ATTR_*` constants in favour of the `Pdo\Mysql` class ones, which do not
+     * exist before 8.4. Resolving by name keeps one connection helper valid across the supported range.
+     */
+    private static function foundRowsAttribute(): int
+    {
+        /** @var int */
+        return \defined('Pdo\\Mysql::ATTR_FOUND_ROWS')
+            ? \constant('Pdo\\Mysql::ATTR_FOUND_ROWS')
+            : PDO::MYSQL_ATTR_FOUND_ROWS;
     }
 
     private static function env(string $name): string

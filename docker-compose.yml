@@ -39,6 +39,10 @@ services:
     build:
       context: .
       dockerfile: Dockerfile.dev
+      args:
+        # Defaults to the newest supported PHP; override to reproduce an older
+        # CI job: `./dev build --build-arg PHP_VERSION=8.2`.
+        PHP_VERSION: "${PHP_VERSION:-8.5}"
     user: "${DOCKER_UID:-1000}:${DOCKER_GID:-1000}"
     network_mode: host
     volumes:

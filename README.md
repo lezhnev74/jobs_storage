@@ -143,8 +143,10 @@ library at runtime; apply `resources/schema/*` manually in deployments.
 
 ## QA
 
-Everything runs inside the dev image (`Dockerfile.dev`: PHP 8.2 - the minimum this package supports - with
-`pdo_pgsql`, `pdo_mysql`, `pcntl` and pcov), so the only host requirement is Docker:
+Everything runs inside the dev image (`Dockerfile.dev`: PHP 8.5 - the newest this package supports - with
+`pdo_pgsql`, `pdo_mysql`, `pcntl` and pcov), so the only host requirement is Docker. CI runs the same gate across
+8.2, 8.3, 8.4 and 8.5; to reproduce an older job locally, rebuild the image against that version:
+`./dev build --build-arg PHP_VERSION=8.2`.
 
 ```
 ./dev up                  # start Postgres + MySQL and wait for them
