@@ -1,5 +1,7 @@
 # lezhnev74/jobs
 
+[![QA](https://github.com/lezhnev74/jobs_storage/actions/workflows/qa.yml/badge.svg)](https://github.com/lezhnev74/jobs_storage/actions/workflows/qa.yml)
+
 Concurrency-safe persistent job storage for PHP: workers in named pools claim batches of jobs under a
 time-bounded lease, work on them and settle each outcome explicitly. Storage-agnostic core with PostgreSQL
 and MySQL drivers included; other backends plug in as drivers.
