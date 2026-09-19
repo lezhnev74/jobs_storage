@@ -1,0 +1,42 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<phpunit xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:noNamespaceSchemaLocation="vendor/phpunit/phpunit/phpunit.xsd"
+         bootstrap="vendor/autoload.php"
+         colors="true"
+         cacheDirectory="build/phpunit"
+         failOnRisky="true"
+         failOnWarning="true"
+         failOnEmptyTestSuite="false"
+         beStrictAboutOutputDuringTests="true"
+         beStrictAboutCoverageMetadata="false"
+         displayDetailsOnTestsThatTriggerDeprecations="true"
+         displayDetailsOnTestsThatTriggerErrors="true"
+         displayDetailsOnTestsThatTriggerNotices="true"
+         displayDetailsOnTestsThatTriggerWarnings="true">
+    <testsuites>
+        <testsuite name="unit">
+            <directory>tests/Unit</directory>
+        </testsuite>
+        <testsuite name="integration-postgres">
+            <directory>tests/Integration/Postgres</directory>
+        </testsuite>
+        <testsuite name="integration-mysql">
+            <directory>tests/Integration/Mysql</directory>
+        </testsuite>
+    </testsuites>
+
+    <source>
+        <include>
+            <directory>src</directory>
+        </include>
+    </source>
+
+    <php>
+        <env name="JOBS_PG_DSN" value="pgsql:host=127.0.0.1;port=5432;dbname=jobs_test"/>
+        <env name="JOBS_PG_USER" value="jobs"/>
+        <env name="JOBS_PG_PASSWORD" value="jobs"/>
+        <env name="JOBS_MYSQL_DSN" value="mysql:host=127.0.0.1;port=3306;dbname=jobs_test"/>
+        <env name="JOBS_MYSQL_USER" value="jobs"/>
+        <env name="JOBS_MYSQL_PASSWORD" value="jobs"/>
+    </php>
+</phpunit>

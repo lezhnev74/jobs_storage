@@ -1,0 +1,16 @@
+includes:
+    - vendor/phpstan/phpstan-strict-rules/rules.neon
+    - vendor/phpstan/phpstan-phpunit/extension.neon
+    - vendor/phpstan/phpstan-phpunit/rules.neon
+
+parameters:
+    level: 7
+    paths:
+        - src
+        - tests/Unit
+        - tests/Integration
+        - tests/Support
+        - tools
+    tmpDir: build/phpstan
+    treatPhpDocTypesAsCertain: false
+    reportUnmatchedIgnoredErrors: true

@@ -1,0 +1,47 @@
+name: QA
+
+on:
+  push:
+  pull_request:
+
+jobs:
+  qa:
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        php: ['8.2', '8.3', '8.4']
+    services:
+      postgres:
+        image: postgres:16-alpine
+        env:
+          POSTGRES_DB: jobs_test
+          POSTGRES_USER: jobs
+          POSTGRES_PASSWORD: jobs
+        ports: ['5432:5432']
+        options: >-
+          --health-cmd "pg_isready -U jobs -d jobs_test"
+          --health-interval 2s --health-timeout 2s --health-retries 15
+      mysql:
+        image: mysql:8.4
+        env:
+          MYSQL_DATABASE: jobs_test
+          MYSQL_USER: jobs
+          MYSQL_PASSWORD: jobs
+          MYSQL_ROOT_PASSWORD: root
+        ports: ['3306:3306']
+        options: >-
+          --health-cmd "mysqladmin ping -h 127.0.0.1 -ujobs -pjobs"
+          --health-interval 2s --health-timeout 2s --health-retries 30
+    steps:
+      - uses: actions/checkout@v4
+      - uses: shivammathur/setup-php@v2
+        with:
+          php-version: ${{ matrix.php }}
+          extensions: pdo_pgsql, pdo_mysql, mbstring
+          coverage: pcov
+      - run: composer install --no-interaction --no-progress --prefer-dist
+      - run: composer cs
+      - run: composer stan
+      - run: composer test:all
+      - run: composer crap

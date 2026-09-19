@@ -1,0 +1,85 @@
+#!/usr/bin/env bash
+#
+# Runs every PHP toolchain command inside the dev image (PHP 8.2 with
+# pdo_pgsql, pdo_mysql and pcov), so the host needs only Docker.
+#
+#   ./dev up                 start Postgres + MySQL and wait for them
+#   ./dev composer <args>    composer inside the image
+#   ./dev qa                 cs + stan + unit tests with the CRAP gate
+#   ./dev test [args]        unit suite
+#   ./dev test:pg            Postgres conformance suite
+#   ./dev test:mysql         MySQL conformance suite
+#   ./dev test:integration   both integration suites
+#   ./dev phpunit <args>     phpunit with arbitrary arguments
+#   ./dev stan / cs / cs:fix
+#   ./dev shell              an interactive shell in the image
+#   ./dev <anything else>    passed to `docker compose`
+
+set -euo pipefail
+cd "$(dirname "$0")"
+
+DOCKER_UID="$(id -u)"
+DOCKER_GID="$(id -g)"
+export DOCKER_UID DOCKER_GID
+
+COMPOSE=(docker compose)
+
+IT_FLAGS=()
+if [ -t 0 ]; then
+    IT_FLAGS=(-it)
+fi
+
+run() {
+    "${COMPOSE[@]}" run --remove-orphans --rm "${IT_FLAGS[@]}" app "$@"
+}
+
+composer_run() {
+    run composer "$@"
+}
+
+if [[ $# -eq 0 ]]; then
+    "${COMPOSE[@]}" ps
+    exit 0
+fi
+
+case "$1" in
+    up)
+        shift
+        "${COMPOSE[@]}" up -d --wait postgres mysql "$@"
+        ;;
+    down)
+        shift
+        "${COMPOSE[@]}" down "$@"
+        ;;
+    build)
+        shift
+        "${COMPOSE[@]}" build app "$@"
+        ;;
+    composer)
+        shift
+        composer_run "$@"
+        ;;
+    install|update)
+        composer_run "$@"
+        ;;
+    phpunit)
+        shift
+        run vendor/bin/phpunit "$@"
+        ;;
+    test|test:integration|test:all|test:pg|test:mysql|qa|cs|cs:fix|stan|crap|coverage)
+        cmd="$1"
+        shift
+        composer_run "$cmd" -- "$@"
+        ;;
+    php)
+        shift
+        run php "$@"
+        ;;
+    shell|exec)
+        shift
+        run sh "$@"
+        ;;
+    *)
+        "${COMPOSE[@]}" "$@"
+        ;;
+esac

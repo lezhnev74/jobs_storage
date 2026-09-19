@@ -1,0 +1,47 @@
+services:
+  postgres:
+    image: postgres:16-alpine
+    environment:
+      POSTGRES_DB: jobs_test
+      POSTGRES_USER: jobs
+      POSTGRES_PASSWORD: jobs
+    ports:
+      - "5432:5432"
+    tmpfs:
+      - /var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U jobs -d jobs_test"]
+      interval: 2s
+      timeout: 2s
+      retries: 15
+
+  mysql:
+    image: mysql:8.4
+    environment:
+      MYSQL_DATABASE: jobs_test
+      MYSQL_USER: jobs
+      MYSQL_PASSWORD: jobs
+      MYSQL_ROOT_PASSWORD: root
+    ports:
+      - "3306:3306"
+    tmpfs:
+      - /var/lib/mysql
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "127.0.0.1", "-ujobs", "-pjobs"]
+      interval: 2s
+      timeout: 2s
+      retries: 30
+
+  # Development runner: `./dev composer test`, `./dev phpunit ...`. Reaches the
+  # two databases over the host network, so the DSNs in phpunit.xml.dist
+  # (127.0.0.1) are the same inside and outside the container.
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile.dev
+    user: "${DOCKER_UID:-1000}:${DOCKER_GID:-1000}"
+    network_mode: host
+    volumes:
+      - .:/app
+      - ./build/composer-cache:/tmp/composer
+    working_dir: /app

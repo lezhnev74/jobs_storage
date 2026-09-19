@@ -1,0 +1,77 @@
+{
+    "name": "lezhnev74/jobs_storage",
+    "description": "Concurrency-safe persistent job storage with leased batch claiming, explicit settlement and first-class monitoring. Ships PostgreSQL and MySQL drivers; pluggable for others.",
+    "type": "library",
+    "license": "MIT",
+    "keywords": [
+        "jobs",
+        "queue",
+        "worker",
+        "lease",
+        "postgres",
+        "mysql"
+    ],
+    "authors": [
+        {
+            "name": "Dmitry Lezhnev",
+            "email": "lezhnev.work@gmail.com"
+        }
+    ],
+    "require": {
+        "php": "^8.2",
+        "ext-json": "*",
+        "nesbot/carbon": "^3.0",
+        "ramsey/uuid": "^4.7"
+    },
+    "require-dev": {
+        "phpunit/phpunit": "^11.5",
+        "phpstan/phpstan": "^2.1",
+        "phpstan/phpstan-strict-rules": "^2.0",
+        "phpstan/phpstan-phpunit": "^2.0",
+        "friendsofphp/php-cs-fixer": "^3.65"
+    },
+    "suggest": {
+        "ext-pdo_pgsql": "Required by the PostgreSQL driver",
+        "ext-pdo_mysql": "Required by the MySQL driver"
+    },
+    "autoload": {
+        "psr-4": {
+            "Lezhnev74\\Jobs\\": "src/"
+        }
+    },
+    "autoload-dev": {
+        "psr-4": {
+            "Lezhnev74\\Jobs\\Tests\\": "tests/"
+        }
+    },
+    "config": {
+        "sort-packages": true,
+        "optimize-autoloader": true,
+        "allow-plugins": false
+    },
+    "minimum-stability": "stable",
+    "prefer-stable": true,
+    "scripts": {
+        "test": "phpunit --testsuite unit",
+        "test:integration": "phpunit --testsuite integration-postgres,integration-mysql",
+        "test:all": "phpunit",
+        "coverage": "phpunit --coverage-html build/coverage --coverage-crap4j build/crap4j.xml",
+        "crap": [
+            "@coverage",
+            "@php tools/crap-check.php build/crap4j.xml 6"
+        ],
+        "stan": "phpstan analyse --memory-limit=512M",
+        "cs": "php-cs-fixer fix --dry-run --diff",
+        "cs:fix": "php-cs-fixer fix",
+        "qa": [
+            "@cs",
+            "@stan",
+            "@crap"
+        ],
+        "test:pg": "phpunit --testsuite integration-postgres",
+        "test:mysql": "phpunit --testsuite integration-mysql"
+    },
+    "scripts-descriptions": {
+        "qa": "Full quality gate: code style, PHPStan level 7, tests with CRAP <= 6"
+    }
+}

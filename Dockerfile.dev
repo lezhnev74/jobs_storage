@@ -1,0 +1,22 @@
+# Development image: the project's minimum PHP (8.2) with the extensions the
+# drivers and the QA gate need. Every composer / phpunit run goes through
+# `./dev`, so the host needs nothing but Docker.
+FROM php:8.2-cli-alpine
+
+RUN apk add --no-cache libpq \
+    && apk add --no-cache --virtual .build-deps $PHPIZE_DEPS linux-headers postgresql-dev \
+    && docker-php-ext-install -j"$(nproc)" pdo_pgsql pdo_mysql pcntl \
+    && pecl install pcov \
+    && docker-php-ext-enable pcov \
+    && apk del .build-deps \
+    && rm -rf /tmp/* /var/cache/apk/*
+
+# git + unzip let composer install from source and cache zips
+RUN apk add --no-cache git unzip
+
+COPY --from=composer:2 /usr/bin/composer /usr/bin/composer
+
+ENV COMPOSER_HOME=/tmp/composer
+WORKDIR /app
+
+CMD ["php", "-v"]
